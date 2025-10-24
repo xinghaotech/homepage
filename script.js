@@ -20,10 +20,13 @@ const navbar = document.querySelector('.navbar');
 window.addEventListener('scroll', () => {
     const currentScroll = window.pageYOffset;
     
-    if (currentScroll > 100) {
-        navbar.style.boxShadow = '0 2px 10px rgba(0,0,0,0.1)';
+    // 滚动时添加阴影
+    if (currentScroll > 50) {
+        navbar.style.boxShadow = '0 4px 20px rgba(0, 0, 0, 0.08)';
+        navbar.style.background = 'rgba(255, 255, 255, 0.98)';
     } else {
-        navbar.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)';
+        navbar.style.boxShadow = '0 1px 3px rgba(0, 0, 0, 0.05)';
+        navbar.style.background = 'rgba(255, 255, 255, 0.95)';
     }
     
     lastScroll = currentScroll;
@@ -111,31 +114,6 @@ blogFilters.forEach(filter => {
     });
 });
 
-// 表单提交处理
-const consultForm = document.getElementById('consultForm');
-
-consultForm.addEventListener('submit', (e) => {
-    e.preventDefault();
-    
-    // 获取表单数据
-    const formData = {
-        name: document.getElementById('name').value,
-        phone: document.getElementById('phone').value,
-        email: document.getElementById('email').value,
-        service: document.getElementById('service').value,
-        message: document.getElementById('message').value
-    };
-    
-    // 这里可以添加实际的表单提交逻辑，例如发送到后端API
-    console.log('表单数据:', formData);
-    
-    // 显示成功消息
-    alert('感谢您的咨询！我们会尽快与您联系。');
-    
-    // 重置表单
-    consultForm.reset();
-});
-
 // 平滑滚动
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     anchor.addEventListener('click', function (e) {
@@ -153,22 +131,28 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     });
 });
 
-// 滚动动画
+// 滚动动画 - 增强版
 const observerOptions = {
     threshold: 0.1,
-    rootMargin: '0px 0px -100px 0px'
+    rootMargin: '0px 0px -50px 0px'
 };
 
 const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
+    entries.forEach((entry, index) => {
         if (entry.isIntersecting) {
-            entry.target.classList.add('fade-in');
+            // 添加延迟效果，让元素逐个出现
+            setTimeout(() => {
+                entry.target.classList.add('fade-in');
+                entry.target.style.opacity = '1';
+            }, index * 100);
         }
     });
 }, observerOptions);
 
 // 观察所有需要动画的元素
-document.querySelectorAll('.service-card, .case-card, .blog-card, .about-intro, .about-education, .about-experience').forEach(el => {
+const animatedElements = document.querySelectorAll('.service-card, .case-card, .blog-card, .about-intro, .about-education, .about-experience, .timeline-point, .step');
+animatedElements.forEach(el => {
+    el.style.opacity = '0';
     observer.observe(el);
 });
 
@@ -182,31 +166,35 @@ const createBackToTop = () => {
     const backToTop = document.createElement('button');
     backToTop.innerHTML = '↑';
     backToTop.className = 'back-to-top';
+    backToTop.setAttribute('aria-label', '返回顶部');
     backToTop.style.cssText = `
         position: fixed;
         bottom: 30px;
         right: 30px;
-        width: 50px;
-        height: 50px;
+        width: 55px;
+        height: 55px;
         border-radius: 50%;
-        background: #2563eb;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         color: white;
         border: none;
         font-size: 24px;
         cursor: pointer;
         opacity: 0;
-        transition: opacity 0.3s, transform 0.3s;
+        visibility: hidden;
+        transition: all 0.3s ease;
         z-index: 1000;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
     `;
     
     document.body.appendChild(backToTop);
     
     window.addEventListener('scroll', () => {
-        if (window.pageYOffset > 300) {
+        if (window.pageYOffset > 500) {
             backToTop.style.opacity = '1';
+            backToTop.style.visibility = 'visible';
         } else {
             backToTop.style.opacity = '0';
+            backToTop.style.visibility = 'hidden';
         }
     });
     
@@ -218,12 +206,80 @@ const createBackToTop = () => {
     });
     
     backToTop.addEventListener('mouseenter', () => {
-        backToTop.style.transform = 'scale(1.1)';
+        backToTop.style.transform = 'scale(1.1) translateY(-3px)';
+        backToTop.style.boxShadow = '0 6px 20px rgba(102, 126, 234, 0.5)';
     });
     
     backToTop.addEventListener('mouseleave', () => {
-        backToTop.style.transform = 'scale(1)';
+        backToTop.style.transform = 'scale(1) translateY(0)';
+        backToTop.style.boxShadow = '0 4px 15px rgba(102, 126, 234, 0.4)';
     });
 };
 
 createBackToTop();
+
+// 数字滚动动画效果
+function animateCounter(element, target, duration = 2000) {
+    let start = 0;
+    const increment = target / (duration / 16);
+    
+    const timer = setInterval(() => {
+        start += increment;
+        if (start >= target) {
+            element.textContent = target;
+            clearInterval(timer);
+        } else {
+            element.textContent = Math.floor(start);
+        }
+    }, 16);
+}
+
+// 为数字添加动画（如果页面中有数字统计）
+const numberElements = document.querySelectorAll('[data-count]');
+if (numberElements.length > 0) {
+    const numberObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting && !entry.target.classList.contains('counted')) {
+                const target = parseInt(entry.target.getAttribute('data-count'));
+                animateCounter(entry.target, target);
+                entry.target.classList.add('counted');
+            }
+        });
+    }, { threshold: 0.5 });
+    
+    numberElements.forEach(el => numberObserver.observe(el));
+}
+
+// 加载二维码图片
+function loadQRCodes() {
+    const qrCodes = [
+        { id: 'wechat-qr', src: 'wechat-qr.png', alt: '微信二维码' },
+        { id: 'work-qr', src: 'work-qr.png', alt: '企业微信二维码' }
+    ];
+    
+    qrCodes.forEach(qr => {
+        const container = document.getElementById(qr.id);
+        if (container) {
+            const img = new Image();
+            img.src = qr.src;
+            img.alt = qr.alt;
+            
+            img.onload = function() {
+                // 图片加载成功，替换占位符内容
+                container.innerHTML = '';
+                container.appendChild(img);
+                container.style.background = 'white';
+            };
+            
+            img.onerror = function() {
+                // 图片加载失败，保持占位符显示
+                console.log(`未找到${qr.alt}图片: ${qr.src}`);
+            };
+        }
+    });
+}
+
+// 页面加载完成后加载二维码
+window.addEventListener('load', () => {
+    loadQRCodes();
+});
