@@ -253,8 +253,7 @@ if (numberElements.length > 0) {
 // 加载二维码图片
 function loadQRCodes() {
     const qrCodes = [
-        { id: 'wechat-qr', src: 'wechat-qr.png', alt: '微信二维码' },
-        { id: 'work-qr', src: 'work-qr.png', alt: '企业微信二维码' }
+        { id: 'wechat-qr', src: 'wechat-qr.png', alt: '微信二维码' }
     ];
     
     qrCodes.forEach(qr => {
